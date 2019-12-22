@@ -10,16 +10,24 @@ from user import User
 
 rooms = {}
 
+def create_user(websocket, name):
+    return User(websocket, name)
 
 async def create_room(websocket, payload):
     if payload["room_code"] in rooms.keys():
         await send_error(websocket, "Room already exists")
     else:
-        user = User(websocket, )
-        rooms[payload["room_code"]] = []
+        rooms[payload["room_code"]] = [create_user(websocket, payload["name"])]
+
+async def join_room(websocket, payload):
+    if payload["room_code"] not in rooms.keys():
+        await send_error(websocket, "Room does not exist")
+    else:
+        rooms[payload["room_code"]].append(create_user(websocket, payload["name"]))
 
 actions = {
-    "create_room": create_room
+    "create_room": create_room,
+    "join_room": join_room
 }
 
 async def send_error(websocket, error_msg):
